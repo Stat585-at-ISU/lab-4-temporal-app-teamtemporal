@@ -10,9 +10,9 @@ ui <- fluidPage(titlePanel("AmesPD Press-logs: A Temporal Analysis",
                 sidebarLayout(sidebarPanel( # Inputs(Widgets) go here:
                               ))
       ,mainPanel(tabsetPanel(
-        plotOutput(outputId = "distPlot")
+        plotOutput(outputId = "incidents")
       ), tabsetPanel(
-        plotOutput(outputId = "distPlot")
+        plotOutput(outputId = "aspects")
       )
       )
 ))
@@ -23,6 +23,25 @@ ui <- fluidPage(titlePanel("AmesPD Press-logs: A Temporal Analysis",
 
 
 #server function
+server <- function(input, output) {
+  output$incidents <- renderPlot({
+    #filter by inputted dates
+
+    #plot data
+
+  })
+
+  output$aspects <- renderTable(filtered_data)
+
+
+}
+
+
+
+
+
+
+
 
 
 
