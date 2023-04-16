@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/Stat585-at-ISU/AmesPD/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Stat585-at-ISU/AmesPD/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of AmesPD is to ...
+The goal of AmesPD is to filter and visualize service calls to the Ames Police Department (2021-2023) or ISU Police (2012-2019). We introduce a shiny app as an interactive way for users to filter these calls based on dates, types of incidents, locations, etc. 
 
 ## Installation
 
@@ -39,10 +39,11 @@ library(AmesPD)
 ## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+There are two sources of data to choose from: Ames PD and ISU Police.
 
 ```{r cars}
-summary(cars)
+head(presslog_ames)
+head(presslog_isu)
 ```
 
 You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
@@ -50,7 +51,5 @@ You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-da
 You can also embed plots, for example:
 
 ```{r pressure, echo = FALSE}
-plot(pressure)
+plot(pressure) # show an example plot here
 ```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
