@@ -1,9 +1,10 @@
 #Our shiny app!
 
 library(shiny)
-library(lubridate)
-library(AmesPD)
-library(dplyr)
+library(tidyverse) #loading this will load both lubridate and dplyr
+#library(lubridate)
+#library(AmesPD) --> this package is not needed
+#library(dplyr)
 library(plotly)
 #Read in data and get data range
 
