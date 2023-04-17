@@ -14,13 +14,15 @@ presslog_ames2 <- separate(presslog_ames, "Call Received Date/Time", c("Date.Rep
 presslog_ames2$Date.Reported <- ymd(presslog_ames2$Date.Reported)
 presslog_ames2$Time.Reported <- hms(presslog_ames2$Time.Reported)
 ames_date_range <- c(min(presslog_ames2$Date.Reported), max(presslog_ames2$Date.Reported))
+presslog_ames2 <- presslog_ames2%>%
+  rename("Disposition" = "Closing Disposition or Cancel Code", "Classification" = "Nature Code Description")
 
 presslog_isu2 <- separate(presslog_isu, "Date.Time.Reported", c("Date.Reported", "Time.Reported"), sep=" ", fill="right")
 presslog_isu2$Date.Reported <- ymd(presslog_isu2$Date.Reported)
 presslog_isu2$Time.Reported <- hms(presslog_isu2$Time.Reported)
 isu_date_range <- c(min(presslog_isu2$Date.Reported), max(presslog_isu2$Date.Reported))
-isu_disposition <- unique(presslog_isu2$Disposition)
-isu_classification <- unique(presslog_isu2$Classification)
+isu_disposition <- list(unique(presslog_isu2$Disposition),unique(presslog_ames2$Disposition))
+isu_classification <- list(unique(presslog_isu2$Classification),unique(presslog_ames2$Classification))
 
 #ui function
 ui <- fluidPage(
@@ -59,17 +61,6 @@ ui <- fluidPage(
 server <- function(input, output) {
 
   v <- reactiveValues(data = NULL, label = NULL)
-  observeEvent(input$ames, {
-    v$data <- presslog_ames2
-    v$label = 'AMES'
-    output$daterange <- renderUI({
-      dateRangeInput("daterange", "Date range:",
-                     min = ames_date_range[1],
-                     max   = ames_date_range[2],
-                     start = ames_date_range[2] - 60,
-                     end = ames_date_range[2])
-    })
-  })
 
   observeEvent(input$isu, {
     v$data <- presslog_isu2
@@ -82,6 +73,20 @@ server <- function(input, output) {
                      end = isu_date_range[2])
     })
   })
+
+  observeEvent(input$ames, {
+    v$data <- presslog_ames2
+    v$label = 'AMES'
+    output$daterange <- renderUI({
+      dateRangeInput("daterange", "Date range:",
+                     min = ames_date_range[1],
+                     max   = ames_date_range[2],
+                     start = ames_date_range[2] - 60,
+                     end = ames_date_range[2])
+    })
+  })
+
+
 
 
 
@@ -166,20 +171,30 @@ server <- function(input, output) {
     })
   # Tab: 'aspects'
   observeEvent(input$columnFilter, {
-    if (input$columnFilter == 1) {
-      updatePickerInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_disposition)
-    } else {
-      updatePickerInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_classification)
+    if (input$isu == 1){
+      if (input$columnFilter == 1) {
+        updatePickerInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_disposition[[1]])
+      } else {
+        updatePickerInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_classification[[1]])
+      }
+    } else if (input$ames == 1){
+      if (input$columnFilter == 1) {
+        updatePickerInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_disposition[[2]])
+      } else {
+        updatePickerInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_classification[[2]])
+      }
     }
   })
 
   output$aspects <- renderTable({
     df = as.data.frame(data())
     validate(need(nrow(df) != 0, "Please choose ISU or Ames!"))
-    df %>% mutate_at(c('longitude', 'latitude'), round, digits = 2) %>%
-      mutate_all(as.character)
-
-    })
+    if (input$columnFilter == 1){
+      df <- df[df$Disposition %in% input$filterGroup, ]
+    } else {
+      df <- df[df$Classification %in% input$filterGroup, ]
+    }
+  })
 
 
 }
