@@ -15,3 +15,4 @@ runExample <- function(x) {
   # the first app will be called
   shiny::runApp(appDir[1], display.mode = "normal")
 }
+

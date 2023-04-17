@@ -38,8 +38,7 @@ ui <- fluidPage(
                              tabPanel("Number of Incidents per day",
                                       fluidRow(plotlyOutput("incidents"), style = "padding-top:20px"),
                                       fluidRow(plotlyOutput("monthly_incidents"), style = "padding-top:20px")),
-                             tabPanel("Analyzing Aspects of Incidents",
-                                      tableOutput(outputId = "aspects"))
+                             tabPanel("Analyzing Aspects of Incidents", selectInput("columnFilter", "Choose Aspects to filter by", choices = list("Disposition" = 1, "Classification" = 2), selected = 1),tableOutput(outputId = "aspects"))
                              )
                  )
                )
