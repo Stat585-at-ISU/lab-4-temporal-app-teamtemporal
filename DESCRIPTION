@@ -19,7 +19,8 @@ Imports:
     tibble,
     rlang
 Depends: 
-    R (>= 2.10)
+    R (>= 2.10),
+    shiny
 LazyData: true
 LitrVersionUsed: 0.7.0
 LitrId: fd13ee5b83c5d18c502a40c477f0ae25
