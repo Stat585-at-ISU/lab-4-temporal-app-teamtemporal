@@ -7,7 +7,7 @@ library(lubridate)
 #Read in data and get data range
 # load("./data/presslog_isu.rda")
 # load("./data/presslog_ames.rda")
-load_all('./')
+#load_all('./')
 data("presslog_isu")
 data("presslog_ames")
 
