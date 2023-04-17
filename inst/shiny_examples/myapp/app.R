@@ -39,7 +39,7 @@ ui <- fluidPage(
                                       fluidRow(plotlyOutput("incidents"), style = "padding-top:20px"),
                                       fluidRow(plotlyOutput("monthly_incidents"), style = "padding-top:20px")),
                              tabPanel("Analyzing Aspects of Incidents",
-                               plotOutput(outputId = "aspects"))
+                                      tableOutput(outputId = "aspects"))
                              )
                  )
                )
@@ -161,7 +161,13 @@ server <- function(input, output) {
       write.csv(data(), file)
     })
   # Tab: 'aspects'
-  output$aspects <- renderTable(filtered_data)
+  output$aspects <- renderTable({
+    df = as.data.frame(data())
+    validate(need(nrow(df) != 0, "Please choose ISU or Ames!"))
+    df %>% mutate_at(c('longitude', 'latitude'), round, digits = 2) %>%
+      mutate_all(as.character)
+
+    })
 
 
 }
