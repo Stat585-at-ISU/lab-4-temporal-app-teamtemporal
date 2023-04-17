@@ -2,11 +2,12 @@ library(shiny)
 library(plotly)
 library(tidyverse)
 library(lubridate)
+#library(devtools)
 
 #Read in data and get data range
 # load("./data/presslog_isu.rda")
 # load("./data/presslog_ames.rda")
-
+load_all('./')
 data("presslog_isu")
 data("presslog_ames")
 
@@ -27,16 +28,11 @@ ui <- fluidPage(titlePanel("AmesPD Press-logs: A Temporal Analysis"),
                              #selectInput("selectData", "Choose Dataset to View", choices = list("ISU" = 1, "Ames" = 2), selected = 1),
                              dateRangeInput("dateRange", "Date range:", start=isu_date_range[1], end=isu_date_range[2]),
                              #dateRangeInput("dateRange", "Date range:", start = NULL, end   = NULL),
-                             actionButton("submit", "View Data!")
-                             )
-                           , mainPanel(tabsetPanel(tabPanel("Number of Incidents per day",
-                             plotOutput(outputId = "incidents") )),
-                             tabsetPanel(tabPanel("Analyzing Aspects of Incidents",
-                             tableOutput(outputId = "aspects") ))
+                             actionButton("submit", "View Data!") ),
+                             mainPanel(tabsetPanel(
+                               tabPanel("Number of Incidents per day", plotOutput(outputId = "incidents") )),
+                             tabPanel("Analyzing Aspects of Incidents", tableOutput(outputId = "aspects") ))
                            ) )
-)
-
-
 
 
 

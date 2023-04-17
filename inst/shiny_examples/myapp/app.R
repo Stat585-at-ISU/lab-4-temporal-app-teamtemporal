@@ -1,38 +1,45 @@
 #Our shiny app!
 
 library(shiny)
-library(tidyverse) #loading this will load both lubridate and dplyr
-#library(lubridate)
-#library(AmesPD) --> this package is not needed
-#library(dplyr)
+library(tidyverse)
 library(plotly)
+library(devtools)
 #Read in data and get data range
-
+load_all('./')
 data("presslog_isu")
+data("presslog_ames")
 
-min_date = min(presslog_isu$Date.Time.Reported)
-max_date = max(presslog_isu$Date.Time.Reported)
+presslog_ames2 <- separate(presslog_ames, "Call Received Date/Time", c("Date.Reported", "Time.Reported"), sep=" ", fill="right")
+presslog_ames2$Date.Reported <- ymd(presslog_ames2$Date.Reported)
+presslog_ames2$Time.Reported <- hms(presslog_ames2$Time.Reported)
+ames_date_range <- c(min(presslog_ames2$Date.Reported), max(presslog_ames2$Date.Reported))
+
+presslog_isu2 <- separate(presslog_isu, "Date.Time.Reported", c("Date.Reported", "Time.Reported"), sep=" ", fill="right")
+presslog_isu2$Date.Reported <- ymd(presslog_isu2$Date.Reported)
+presslog_isu2$Time.Reported <- hms(presslog_isu2$Time.Reported)
+isu_date_range <- c(min(presslog_isu2$Date.Reported), max(presslog_isu2$Date.Reported))
+
+
 #ui function
 ui <- fluidPage(
   titlePanel("AmesPD Press-logs: A Temporal Analysis"),
              sidebarLayout(
                sidebarPanel(
                # Inputs(Widgets) go here:
+                 actionButton("isu", "ISU"),
+                 actionButton("ames", "AMES"),
+                 #date range
+                 uiOutput("daterange"),
 
-               #date range
-               dateRangeInput("daterange", "Date range:",
-                              min = as.Date(min_date),
-                              max   = as.Date(max_date),
-                              start = as.Date(max_date) - 730,
-                              end = as.Date(max_date))
+                 downloadButton("downloadData")
                ),
                mainPanel(
                  tabsetPanel(type = "tabs",
-                             tabPanel("Plot",
+                             tabPanel("Number of Incidents per day",
                                       fluidRow(plotlyOutput("incidents"), style = "padding-top:20px"),
                                       fluidRow(plotlyOutput("monthly_incidents"), style = "padding-top:20px")),
-                             tabPanel("B",
-                               plotOutput(outputId = "aspects"))
+                             tabPanel("Analyzing Aspects of Incidents",
+                                      tableOutput(outputId = "aspects"))
                              )
                  )
                )
@@ -47,17 +54,49 @@ ui <- fluidPage(
 #server function
 server <- function(input, output) {
 
-  data <- reactive({
-    dates = input$daterange
-    presslog_isu %>%
-      filter(Date.Time.Reported > dates[1] & Date.Time.Reported < dates[2])
+  v <- reactiveValues(data = NULL, label = NULL)
+  observeEvent(input$ames, {
+    v$data <- presslog_ames2
+    v$label = 'AMES'
+    output$daterange <- renderUI({
+      dateRangeInput("daterange", "Date range:",
+                     min = ames_date_range[1],
+                     max   = ames_date_range[2],
+                     start = ames_date_range[2] - 60,
+                     end = ames_date_range[2])
+    })
   })
 
+  observeEvent(input$isu, {
+    v$data <- presslog_isu2
+    v$label = 'ISU'
+    output$daterange <- renderUI({
+      dateRangeInput("daterange", "Date range:",
+                     min = isu_date_range[1],
+                     max   = isu_date_range[2],
+                     start = isu_date_range[2] - 730,
+                     end = isu_date_range[2])
+    })
+  })
+
+
+
+# get filtered data
+  data <- reactive({
+    if(is.null(v$data)) return(NULL)
+    req(input$daterange)
+    if(is.null(input$daterange)) return(NULL)
+    dates = input$daterange
+    v$data %>%
+      filter(Date.Reported > dates[1] & Date.Reported < dates[2])
+  })
+# Tab: 'Number of Incidents per day'
   output$incidents <- renderPlotly({
     #filter by inputted dates
     incidents = data()
+    validate(need(!is.null(incidents), "Please choose ISU or Ames!"))
     number_incidents = incidents %>%
-      group_by(date(Date.Time.Reported )) %>%
+      group_by(Date.Reported) %>%
       count()
     names(number_incidents) = c('Date', 'n')
     number_incidents = as.data.frame(number_incidents)
@@ -93,9 +132,10 @@ server <- function(input, output) {
   output$monthly_incidents <- renderPlotly({
     #filter by inputted dates
     incidents = data()
+    validate(need(!is.null(incidents), "Please choose ISU or Ames!"))
     number_incidents = incidents %>%
-      mutate(Month.Time.Reported = floor_date(Date.Time.Reported, "month")) %>%
-      group_by(date(Month.Time.Reported )) %>%
+      mutate(Month.Reported = floor_date(Date.Reported, "month")) %>%
+      group_by(date(Month.Reported )) %>%
       count()
     names(number_incidents) = c('Date', 'n')
     number_incidents = as.data.frame(number_incidents)
@@ -114,7 +154,20 @@ server <- function(input, output) {
 
   })
 
-  output$aspects <- renderTable(filtered_data)
+  label = reactive({v$label})
+  output$downloadData <- downloadHandler(
+    filename = function() {sprintf("presslog_%s_%s_to_%s.csv", label(), input$daterange[1], input$daterange[2])},
+    content = function(file) {
+      write.csv(data(), file)
+    })
+  # Tab: 'aspects'
+  output$aspects <- renderTable({
+    df = as.data.frame(data())
+    validate(need(nrow(df) != 0, "Please choose ISU or Ames!"))
+    df %>% mutate_at(c('longitude', 'latitude'), round, digits = 2) %>%
+      mutate_all(as.character)
+
+    })
 
 
 }
