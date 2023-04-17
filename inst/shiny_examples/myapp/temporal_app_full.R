@@ -30,8 +30,8 @@ ui <- fluidPage(titlePanel("AmesPD Press-logs: A Temporal Analysis"),
                              #dateRangeInput("dateRange", "Date range:", start = NULL, end   = NULL),
                              actionButton("submit", "View Data!") ),
                              mainPanel(tabsetPanel(
-                               tabPanel("Number of Incidents per day", plotOutput(outputId = "incidents") )),
-                             tabPanel("Analyzing Aspects of Incidents", tableOutput(outputId = "aspects") ))
+                               tabPanel("Number of Incidents per day", plotOutput(outputId = "incidents") ),
+                             tabPanel("Analyzing Aspects of Incidents", tableOutput(outputId = "aspects") ) )
                            ) )
 
 
