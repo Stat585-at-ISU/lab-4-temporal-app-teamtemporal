@@ -18,7 +18,8 @@ presslog_isu2 <- separate(presslog_isu, "Date.Time.Reported", c("Date.Reported",
 presslog_isu2$Date.Reported <- ymd(presslog_isu2$Date.Reported)
 presslog_isu2$Time.Reported <- hms(presslog_isu2$Time.Reported)
 isu_date_range <- c(min(presslog_isu2$Date.Reported), max(presslog_isu2$Date.Reported))
-
+isu_dispostition <- unique(presslog_isu2$Disposition)
+isu_classifications <- unique(presslog_isu2$Classifications)
 
 #ui function
 ui <- fluidPage(
@@ -38,7 +39,10 @@ ui <- fluidPage(
                              tabPanel("Number of Incidents per day",
                                       fluidRow(plotlyOutput("incidents"), style = "padding-top:20px"),
                                       fluidRow(plotlyOutput("monthly_incidents"), style = "padding-top:20px")),
-                             tabPanel("Analyzing Aspects of Incidents", selectInput("columnFilter", "Choose Aspects to filter by", choices = list("Disposition" = 1, "Classification" = 2), selected = 1),tableOutput(outputId = "aspects"))
+                             tabPanel("Analyzing Aspects of Incidents", 
+                                      selectInput("columnFilter", "Choose Aspects to filter by", choices = list("Disposition" = 1, "Classification" = 2), selected = 1),
+                                      checkboxGroupInput("filterGroup", "Column Elements to filter", choices = NULL),
+                                      tableOutput(outputId = "aspects"))
                              )
                  )
                )
@@ -160,6 +164,14 @@ server <- function(input, output) {
       write.csv(data(), file)
     })
   # Tab: 'aspects'
+  observeEvent(input$columnFilter, {
+    if (input$columnFilter == "Disposition") {
+      updateCheckboxGroupInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_disposition)
+    } else {
+      updateCheckboxGroupInput(session = getDefaultReactiveDomain(), "filterGroup", "Column Elements to filter", choices = isu_classifications)
+    }
+  })
+  
   output$aspects <- renderTable({
     df = as.data.frame(data())
     validate(need(nrow(df) != 0, "Please choose ISU or Ames!"))
