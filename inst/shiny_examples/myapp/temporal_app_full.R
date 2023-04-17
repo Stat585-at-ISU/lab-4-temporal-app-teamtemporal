@@ -1,10 +1,10 @@
 library(shiny)
 library(plotly)
-
+library(devtools)
 #Read in data and get data range
 # load("./data/presslog_isu.rda")
 # load("./data/presslog_ames.rda")
-
+load_all('./')
 data("presslog_isu")
 data("presslog_ames")
 
@@ -20,18 +20,19 @@ isu_date_range <- c(min(presslog_isu2$Date.Reported), max(presslog_isu2$Date.Rep
 
 
 #ui function
-ui <- fluidPage(titlePanel("AmesPD Press-logs: A Temporal Analysis"),
-                           sidebarLayout(sidebarPanel( # Inputs(Widgets) go here:
-                             #selectInput("selectData", "Choose Dataset to View", choices = list("ISU" = 1, "Ames" = 2), selected = 1),
-                             dateRangeInput("dateRange", "Date range:", start=isu_date_range[1], end=isu_date_range[2]),
-                             #dateRangeInput("dateRange", "Date range:", start = NULL, end   = NULL),
-                             actionButton("submit", "View Data!")
-                             )
-                           , mainPanel(tabsetPanel(tabPanel("Number of Incidents per day",
-                             plotlyOutput(outputId = "incidents") )),
-                             tabsetPanel(tabPanel("Analyzing Aspects of Incidents",
-                             plotOutput(outputId = "aspects") ))
-                           ) )
+ui <- fluidPage(
+  titlePanel("AmesPD Press-logs: A Temporal Analysis"),
+  sidebarLayout(sidebarPanel( # Inputs(Widgets) go here:
+    #selectInput("selectData", "Choose Dataset to View", choices = list("ISU" = 1, "Ames" = 2), selected = 1),
+    dateRangeInput("dateRange", "Date range:", start=isu_date_range[1], end=isu_date_range[2]),
+    #dateRangeInput("dateRange", "Date range:", start = NULL, end   = NULL),
+    actionButton("submit", "View Data!")),
+    mainPanel(tabsetPanel(tabPanel("Number of Incidents per day",
+                                   plotlyOutput(outputId = "incidents")),
+                          tabPanel("Analyzing Aspects of Incidents",
+                                   plotOutput(outputId = "aspects") ))
+              )
+    )
 )
 
 

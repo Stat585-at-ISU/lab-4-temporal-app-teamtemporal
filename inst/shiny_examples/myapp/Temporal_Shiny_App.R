@@ -22,14 +22,16 @@ presslog_isu2$Time.Reported <- hms(presslog_isu2$Time.Reported)
 isu_date_range <- c(min(presslog_isu2$Date.Reported), max(presslog_isu2$Date.Reported))
 
 #ui function
-ui <- fluidPage(titlePanel("AmesPD Press-logs: A Temporal Analysis"),
-                sidebarLayout(sidebarPanel( # Inputs(Widgets) go here:
-                  dateRangeInput("dateRange", "Date range:", start=isu_date_range[1], end=isu_date_range[2]),
-                              )
-      , mainPanel(tabsetPanel(tabPanel("Number of Incidents",
-        plotOutput(outputId = "incidents") )),
-      tabsetPanel(tabPanel("Analyzing Aspects of Incidents",
-        plotOutput(outputId = "aspects") ))
+ui <- fluidPage(
+  titlePanel("AmesPD Press-logs: A Temporal Analysis"),
+  sidebarLayout(
+    sidebarPanel( # Inputs(Widgets) go here:
+      dateRangeInput("dateRange", "Date range:", start=isu_date_range[1], end=isu_date_range[2])),
+    mainPanel(tabsetPanel(tabPanel("Number of Incidents",
+                                   plotOutput(outputId = "incidents") ),
+                          tabPanel("Analyzing Aspects of Incidents",
+                                   plotOutput(outputId = "aspects") )
+                          )
       )
 ))
 
