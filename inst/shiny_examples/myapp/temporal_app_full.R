@@ -1,5 +1,7 @@
 library(shiny)
 library(plotly)
+library(tidyverse)
+library(lubridate)
 
 #Read in data and get data range
 # load("./data/presslog_isu.rda")
@@ -28,9 +30,9 @@ ui <- fluidPage(titlePanel("AmesPD Press-logs: A Temporal Analysis"),
                              actionButton("submit", "View Data!")
                              )
                            , mainPanel(tabsetPanel(tabPanel("Number of Incidents per day",
-                             plotlyOutput(outputId = "incidents") )),
+                             plotOutput(outputId = "incidents") )),
                              tabsetPanel(tabPanel("Analyzing Aspects of Incidents",
-                             plotOutput(outputId = "aspects") ))
+                             tableOutput(outputId = "aspects") ))
                            ) )
 )
 
@@ -53,9 +55,11 @@ server <- function(input, output) {
 
   #Logan's code
   observeEvent(input$submit, {
-    filter_range <- c(ymd(input$dateRange[1]), ymd(input$dateRange[2]))
+    filter_range <- c(input$dateRange[1], input$dateRange[2])
     #print(filter_range)
-    filtered_data <- presslog_isu2 %>% filter("Date.Reported">=filter_range[1]) %>% filter("Date.Reported"<=filter_range[2])
+    #filtered_data <- presslog_isu2 %>% dplyr::filter("Date.Reported">=filter_range[1]) %>% dplyr::filter("Date.Reported"<=filter_range[2])
+    filtered_data <- presslog_isu2[presslog_isu2$Date.Reported>=filter_range[1],]
+    filtered_data <- presslog_isu2[presslog_isu2$Date.Reported<=filter_range[2],]
     plot_data <- as.data.frame(table(filtered_data$Date.Reported))
     # fig <- plot_ly()%>%
     #   add_trace(data = plot_data, type = 'scatter', mode = 'lines', fill = 'tozeroy', x = ~Date, y = ~n, name = 'N') %>%
