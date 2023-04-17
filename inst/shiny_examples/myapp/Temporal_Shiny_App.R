@@ -1,10 +1,15 @@
 #Our shiny app!
 
 library(shiny)
+library(tidyverse)
+library(lubridate)
 
 #Read in data and get data range
-load("./data/presslog_isu.rda")
-load("./data/presslog_ames.rda")
+#load("./data/presslog_isu.rda")
+#load("./data/presslog_ames.rda")
+
+data("presslog_isu")
+data("presslog_ames")
 
 presslog_ames2 <- separate(presslog_ames, "Call Received Date/Time", c("Date.Reported", "Time.Reported"), sep=" ", fill="right")
 presslog_ames2$Date.Reported <- ymd(presslog_ames2$Date.Reported)
